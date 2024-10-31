@@ -1,11 +1,15 @@
 package com.cesarmaydana.cursojava.model;
 
-import com.cesarmaydana.cursojava.clases.Persistence;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "ventaproducto")
-public class SaleProduct extends Persistence {
+
+public class SaleProduct {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
     private Product producto;
@@ -14,6 +18,22 @@ public class SaleProduct extends Persistence {
     private Sale venta;
 
     private int cantidad;
+
+    public int getCantidad() {
+        return cantidad;
+    }
+
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Product getProducto() {
         return producto;
@@ -31,11 +51,7 @@ public class SaleProduct extends Persistence {
         this.venta = venta;
     }
 
-    public int getCantidad() {
-        return cantidad;
-    }
 
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
-    }
+
+
 }

@@ -1,26 +1,31 @@
 package com.cesarmaydana.cursojava.model;
 
-import com.cesarmaydana.cursojava.clases.Persistence;
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.util.List;
 
 @Entity
 @Table(name = "productos")
-public class Product extends Persistence {
+@Data
+public class Product {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String nombre;
     private Integer stock; // Mantener el campo stock
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PriceList> listaPrecios;
-
-    @ManyToOne
-    @JoinColumn(name = "categoria_id")
-    private Category categoria;
-
-    @ManyToOne
-    @JoinColumn(name = "marca_id")
-    private SaleMark marca;
 
     public String getNombre() {
         return nombre;

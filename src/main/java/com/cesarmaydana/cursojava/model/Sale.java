@@ -1,13 +1,20 @@
 package com.cesarmaydana.cursojava.model;
 
-import com.cesarmaydana.cursojava.clases.Persistence;
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "ventas")
-public class Sale extends Persistence {
+@Data
+public class Sale {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private LocalDate fecha;
 
@@ -15,9 +22,17 @@ public class Sale extends Persistence {
     private Client cliente;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
-    private List<SaleProduct> ventaProductos;
+    private List<SaleProduct> ventaProductos = new ArrayList<>();;
 
     private Double monto;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Client getCliente() {
         return cliente;
@@ -39,12 +54,12 @@ public class Sale extends Persistence {
         return fecha;
     }
 
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
-    }
-
     public Double getMonto() {
         return monto;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
     }
 
     public void setMonto(Double monto) {

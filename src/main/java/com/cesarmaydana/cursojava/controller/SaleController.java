@@ -1,6 +1,7 @@
 package com.cesarmaydana.cursojava.controller;
 
 import com.cesarmaydana.cursojava.dto.SaleDto;
+import com.cesarmaydana.cursojava.dto.SaleRequestDto;
 import com.cesarmaydana.cursojava.model.Sale;
 import com.cesarmaydana.cursojava.service.ClientService;
 import com.cesarmaydana.cursojava.service.SaleService;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class SaleController {
 
     @Autowired
-    private SaleService ventaService;
+    private SaleService saleService;
 
     @Autowired
     private ClientService clienteService;
@@ -34,8 +35,8 @@ public class SaleController {
     @GetMapping
     public List<SaleDto> obtenerTodasLasVentas() {
         // Mapea la lista de ventas a DTO
-        return ventaService.obtenerTodasLasVentas().stream()
-                .map(venta -> ventaService.convertirAVentaDTO(venta))
+        return saleService.obtenerTodasLasVentas().stream()
+                .map(venta -> saleService.convertirAVentaDTO(venta))
                 .toList();
     }
 
@@ -46,8 +47,8 @@ public class SaleController {
     })
     @GetMapping("{id}")
     public ResponseEntity<SaleDto> obtenerVentasPorId(@PathVariable Long id) {
-        Optional<Sale> venta = ventaService.obtenerVentaPorId(id);
-        return venta.map(v -> ResponseEntity.ok(ventaService.convertirAVentaDTO(v)))
+        Optional<Sale> venta = saleService.obtenerVentaPorId(id);
+        return venta.map(v -> ResponseEntity.ok(saleService.convertirAVentaDTO(v)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -58,9 +59,9 @@ public class SaleController {
             @ApiResponse(responseCode = "404", description = "Cliente o producto no encontrado")
     })
     @PostMapping
-    public ResponseEntity<String> crearVenta(@RequestBody Sale nuevaVenta) {
-        String resultado = ventaService.crearVenta(nuevaVenta);
+    public ResponseEntity<String> crearVenta(@RequestBody SaleRequestDto saleRequestDto) {
 
+        String resultado = saleService.crearVenta(saleRequestDto);
         if (resultado.equals("Venta creada exitosamente")) {
             return new ResponseEntity<>(resultado, HttpStatus.CREATED);
         } else if (resultado.contains("Stock insuficiente")) {
@@ -68,6 +69,7 @@ public class SaleController {
         } else {
             return new ResponseEntity<>(resultado, HttpStatus.NOT_FOUND);
         }
+
     }
 
     @Operation(summary = "Cancelar una venta", description = "Cancela una venta existente y restaura el stock de productos.")
@@ -77,7 +79,7 @@ public class SaleController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<String> cancelarVenta(@PathVariable Long id) {
-        if (ventaService.cancelarVenta(id)) {
+        if (saleService.cancelarVenta(id)) {
             return new ResponseEntity<>("Venta cancelada y stock restaurado exitosamente", HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Venta no encontrada", HttpStatus.NOT_FOUND);

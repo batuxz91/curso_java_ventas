@@ -1,13 +1,16 @@
 package com.cesarmaydana.cursojava.model;
 
-import com.cesarmaydana.cursojava.clases.Persistence;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "listaprecios")
-public class PriceList extends Persistence {
+public class PriceList {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id")
