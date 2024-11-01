@@ -26,38 +26,32 @@ public class ProductService {
     @Autowired
     private PriceListService listaPrecioService;
 
-    // Obtener todos los productos
     public List<ProductResponseDto> obtenerTodosLosProductos() {
         List<Product> productos = productoRepository.findAll();
 
-        // Convertir cada Producto a ProductoResponseDTO manualmente
         List<ProductResponseDto> productosDto = productos.stream()
                 .map(producto -> new ProductResponseDto(
                         producto.getId(),
                         producto.getNombre(),
                         producto.getStock(),
-                        listaPrecioService.obtenerPrecioVigente(producto.getId())
+                        listaPrecioService.obtenerListaPrecioVigente(producto.getId()).getPrecio()
                 ))
                 .collect(Collectors.toList());
 
         return productosDto;
     }
 
-    // Obtener producto por ID
     public Optional<ProductResponseDto> obtenerProductoPorId(Long id) {
         return productoRepository.findById(id)
                 .map(producto -> new ProductResponseDto(
                         producto.getId(),
                         producto.getNombre(),
                         producto.getStock(),
-                        listaPrecioService.obtenerPrecioVigente(producto.getId()) // Este método debe devolver un Double, no un Optional
+                        listaPrecioService.obtenerListaPrecioVigente(producto.getId()).getPrecio()
                 ));
     }
 
-    // Guardar un producto con precio (a partir de un ProductoRequestDTO)
     public Product guardarProducto(ProductRequestDto productoRequestDTO) {
-
-        // Validación de negocio: el producto debe tener al menos un precio
 
         if (productoRequestDTO.getNombre() == null || productoRequestDTO.getNombre().isEmpty()) {
             throw new IllegalArgumentException("El producto debe tener un nombre.");
@@ -67,15 +61,12 @@ public class ProductService {
             throw new IllegalArgumentException("El producto debe tener al menos un precio.");
         }
 
-        // Crear la entidad Producto
         Product nuevoProducto = new Product();
         nuevoProducto.setNombre(productoRequestDTO.getNombre());
         nuevoProducto.setStock(productoRequestDTO.getStock());
 
-        // Guardar el producto para obtener un ID asignado
         Product productoGuardado = productoRepository.save(nuevoProducto);
 
-        // Finalizar la vigencia de precios anteriores que no tienen fecha de vigencia
         List<PriceList> preciosAnteriores = listaPrecioRepository.findByProductoId(productoGuardado.getId());
         for (PriceList precio : preciosAnteriores) {
             if (precio.getFechaFinVigencia() == null) {
@@ -84,7 +75,6 @@ public class ProductService {
             }
         }
 
-        // Guardar el nuevo precio
         PriceList nuevoPrecio = new PriceList();
         nuevoPrecio.setPrecio(productoRequestDTO.getPrecio());
         nuevoPrecio.setFechaFinVigencia(null);
@@ -97,14 +87,12 @@ public class ProductService {
 
     public Optional<ProductResponseDto> modificarProducto(Long id, ProductRequestDto productoRequestDTO) {
 
-        // Verificar si el producto existe
         Optional<Product> productoOpt = productoRepository.findById(id);
         if (!productoOpt.isPresent()) {
-            return Optional.empty(); // Producto no encontrado
+            return Optional.empty();
         }
 
         Product producto = productoOpt.get();
-        // Actualizar los campos del producto
 
         if (productoRequestDTO.getNombre() == null && productoRequestDTO.getNombre().isEmpty()){
             throw new IllegalArgumentException("El producto debe tener un nombre.");
@@ -117,7 +105,6 @@ public class ProductService {
         producto.setNombre(productoRequestDTO.getNombre());
         producto.setStock(productoRequestDTO.getStock());
 
-        // Finalizar la vigencia de precios anteriores que no tienen fecha de vigencia
         List<PriceList> preciosAnteriores = listaPrecioRepository.findByProductoId(producto.getId());
         for (PriceList precio : preciosAnteriores) {
             if (precio.getFechaFinVigencia() == null) {
@@ -126,30 +113,20 @@ public class ProductService {
             }
         }
 
-        // Guardar el nuevo precio
         PriceList nuevoPrecio = new PriceList();
         nuevoPrecio.setPrecio(productoRequestDTO.getPrecio());
         nuevoPrecio.setFechaFinVigencia(null);
-        nuevoPrecio.setProducto(producto); // Asignar el producto a la lista de precios
+        nuevoPrecio.setProducto(producto);
 
-        listaPrecioRepository.save(nuevoPrecio); // Guardar el nuevo precio
-        productoRepository.save(producto); // Guardar los cambios en el producto
+        listaPrecioRepository.save(nuevoPrecio);
+        productoRepository.save(producto);
 
-        // Convertir el producto actualizado a ProductoResponseDTO
         return Optional.of(new ProductResponseDto(
                 producto.getId(),
                 producto.getNombre(),
                 producto.getStock(),
-                listaPrecioService.obtenerPrecioVigente(producto.getId()) // Obtener el precio vigente
+                listaPrecioService.obtenerListaPrecioVigente(producto.getId()).getPrecio()
         ));
-    }
-
-    // Eliminar un producto por ID
-    public boolean eliminarProducto(Long id) {
-        return productoRepository.findById(id).map(producto -> {
-            productoRepository.delete(producto);
-            return true;
-        }).orElse(false);
     }
 
 }

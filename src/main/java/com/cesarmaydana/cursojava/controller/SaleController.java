@@ -1,6 +1,6 @@
 package com.cesarmaydana.cursojava.controller;
 
-import com.cesarmaydana.cursojava.dto.SaleDto;
+import com.cesarmaydana.cursojava.dto.SaleResponseDto;
 import com.cesarmaydana.cursojava.dto.SaleRequestDto;
 import com.cesarmaydana.cursojava.model.Sale;
 import com.cesarmaydana.cursojava.service.ClientService;
@@ -33,8 +33,7 @@ public class SaleController {
             @ApiResponse(responseCode = "200", description = "Lista de ventas obtenida exitosamente")
     })
     @GetMapping
-    public List<SaleDto> obtenerTodasLasVentas() {
-        // Mapea la lista de ventas a DTO
+    public List<SaleResponseDto> obtenerTodasLasVentas() {
         return saleService.obtenerTodasLasVentas().stream()
                 .map(venta -> saleService.convertirAVentaDTO(venta))
                 .toList();
@@ -46,7 +45,7 @@ public class SaleController {
             @ApiResponse(responseCode = "404", description = "Venta no encontrada")
     })
     @GetMapping("{id}")
-    public ResponseEntity<SaleDto> obtenerVentasPorId(@PathVariable Long id) {
+    public ResponseEntity<SaleResponseDto> obtenerVentasPorId(@PathVariable Long id) {
         Optional<Sale> venta = saleService.obtenerVentaPorId(id);
         return venta.map(v -> ResponseEntity.ok(saleService.convertirAVentaDTO(v)))
                 .orElseGet(() -> ResponseEntity.notFound().build());

@@ -17,6 +17,10 @@ public class SaleProduct {
     @ManyToOne
     private Sale venta;
 
+    @ManyToOne
+    @JoinColumn(name = "price_list_id", nullable = false)
+    private PriceList listaPrecioVigente;
+
     private int cantidad;
 
     public int getCantidad() {
@@ -51,7 +55,13 @@ public class SaleProduct {
         this.venta = venta;
     }
 
+    public PriceList getListaPrecioVigente() {
+        return listaPrecioVigente;
+    }
 
+    public void setListaPrecioVigente(PriceList listaPrecioVigente) {
+        this.listaPrecioVigente = listaPrecioVigente;
+    }
 
 
 }

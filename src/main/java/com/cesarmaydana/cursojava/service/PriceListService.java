@@ -22,7 +22,20 @@ public class PriceListService {
     @Autowired
     private ProductoRepository productoRepository;
 
-    public Double obtenerPrecioVigente(Long productoId) {
+    public PriceList obtenerListaPrecioVigente(Long productoId) {
+        Optional<Product> productoOpt = productoRepository.findById(productoId);
+        if (productoOpt.isPresent()) {
+            Product producto = productoOpt.get();
+            // Retornar la entidad PriceList en lugar de solo el precio
+            return producto.getListaPrecios().stream()
+                    .filter(precio -> precio.getFechaFinVigencia() == null)
+                    .findFirst()
+                    .orElse(null); // Retorna null si no hay un precio vigente
+        }
+        return null; // Si no se encuentra el producto o no hay precios vigentes
+    }
+
+    /*public Double obtenerPrecioVigente(Long productoId) {
         Optional<Product> productoOpt = productoRepository.findById(productoId);
         if (productoOpt.isPresent()) {
             Product producto = productoOpt.get();
@@ -32,8 +45,8 @@ public class PriceListService {
                     .findFirst()
                     .orElse(0.0);
         }
-        return 0.0; // Valor por defecto si no se encuentra el producto
-    }
+        return 0.0;
+    }*/
 
     public PriceListResponseDto getListaPrecioById(Long productoId) {
         Optional<Product> productoOpt = productoRepository.findById(productoId);
@@ -43,10 +56,8 @@ public class PriceListService {
 
         Product producto = productoOpt.get();
 
-        // Obtener todos los precios históricos
         List<PriceList> preciosHistoricos = listaPrecioRepository.findByProductoId(productoId);
 
-        // Mapear precios a DTO
         List<PriceListDto> listaPreciosDto = preciosHistoricos.stream()
                 .map(precio -> new PriceListDto(precio.getPrecio(), precio.getFechaFinVigencia()))
                 .collect(Collectors.toList());
@@ -55,10 +66,9 @@ public class PriceListService {
     }
 
     public List<PriceListResponseDto> getListaPrecio() {
-        // Obtener todos los productos
+
         List<Product> productos = productoRepository.findAll();
 
-        // Mapear cada producto con su historial de precios
         List<PriceListResponseDto> productosConPreciosDto = productos.stream()
                 .map(producto -> {
                     // Obtener todos los precios históricos para el producto actual

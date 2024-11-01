@@ -18,6 +18,10 @@ public class PriceList {
     private Double precio;
     private LocalDateTime fechaFinVigencia;
 
+    public Long getId() {return id;}
+
+    public void setId(Long id) {this.id = id;}
+
     public Product getProducto() {
         return producto;
     }

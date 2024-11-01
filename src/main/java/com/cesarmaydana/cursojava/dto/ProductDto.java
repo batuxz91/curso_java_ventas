@@ -5,6 +5,11 @@ public class ProductDto {
     private Long productId;
     private int cantidad;
 
+    public ProductDto(Long productId, int cantidad) {
+        this.productId = productId;
+        this.cantidad = cantidad;
+    }
+
     public Long getProductId() {
         return productId;
     }

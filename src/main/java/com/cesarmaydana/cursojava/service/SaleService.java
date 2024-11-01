@@ -1,13 +1,10 @@
 package com.cesarmaydana.cursojava.service;
 
 import com.cesarmaydana.cursojava.dto.ProductDto;
-import com.cesarmaydana.cursojava.dto.SaleDto;
+import com.cesarmaydana.cursojava.dto.SaleResponseDto;
 import com.cesarmaydana.cursojava.dto.SaleProductDto;
 import com.cesarmaydana.cursojava.dto.SaleRequestDto;
-import com.cesarmaydana.cursojava.model.Client;
-import com.cesarmaydana.cursojava.model.Product;
-import com.cesarmaydana.cursojava.model.Sale;
-import com.cesarmaydana.cursojava.model.SaleProduct;
+import com.cesarmaydana.cursojava.model.*;
 import com.cesarmaydana.cursojava.repository.ClientRepository;
 import com.cesarmaydana.cursojava.repository.ProductoRepository;
 import com.cesarmaydana.cursojava.repository.SaleRepository;
@@ -33,17 +30,14 @@ public class SaleService {
     @Autowired
     private PriceListService listaPrecioService;
 
-    // Obtener todas las ventas
     public List<Sale> obtenerTodasLasVentas() {
         return ventaRepository.findAll();
     }
 
-    // Obtener una venta por ID
     public Optional<Sale> obtenerVentaPorId(Long id) {
         return ventaRepository.findById(id);
     }
 
-    // Crear una nueva venta con lógica de negocio
     public String crearVenta(SaleRequestDto saleRequestDto) {
 
         Sale sale = new Sale();
@@ -68,22 +62,23 @@ public class SaleService {
             if (productoOpt.isPresent()) {
                 Product producto = productoOpt.get();
 
-                Double precio = listaPrecioService.obtenerPrecioVigente(producto.getId());
-                if (precio == null) {
-                    return "Precio no encontrado para el producto: " + producto.getNombre();
+                PriceList listaPrecioVigente = listaPrecioService.obtenerListaPrecioVigente(producto.getId());
+                if (listaPrecioVigente == null) {
+                    return "Lista de precios no encontrada para el producto: " + producto.getNombre();
                 }
-
-                // Verificar si hay suficiente stock
+                Double precio = listaPrecioVigente.getPrecio();
                 if (producto.getStock() >= productDto.getCantidad()) {
                     SaleProduct saleProduct = new SaleProduct();
                     saleProduct.setProducto(producto);
-                    saleProduct.setVenta(sale); // Asignar la venta al producto
-                    saleProduct.setCantidad(productDto.getCantidad()); // Establecer la cantidad
-                    sale.getVentaProductos().add(saleProduct); // Añadir producto a la lista de venta
+                    saleProduct.setVenta(sale);
+                    saleProduct.setCantidad(productDto.getCantidad());
+                    saleProduct.setListaPrecioVigente(listaPrecioVigente);
+                    sale.getVentaProductos().add(saleProduct);
 
-                    totalMonto += precio * productDto.getCantidad(); // Calcular el total
-                    producto.setStock(producto.getStock() - productDto.getCantidad()); // Actualizar stock
-                    productoRepository.save(producto); // Guardar los cambios del producto
+                    totalMonto += precio * productDto.getCantidad();
+                    producto.setStock(producto.getStock() - productDto.getCantidad());
+
+                    productoRepository.save(producto);
                 } else {
                     return "Stock insuficiente para el producto: " + producto.getNombre();
                 }
@@ -92,14 +87,13 @@ public class SaleService {
             }
         }
 
-        sale.setMonto(totalMonto); // Establecer el monto total de la venta
-        ventaRepository.save(sale); // Guardar la venta en la base de datos
+        sale.setMonto(totalMonto);
+        ventaRepository.save(sale);
 
         return "Venta creada exitosamente";
     }
 
 
-    // Cancelar venta y restaurar el stock
     public boolean cancelarVenta(Long id) {
         Optional<Sale> ventaOpt = obtenerVentaPorId(id);
 
@@ -117,9 +111,8 @@ public class SaleService {
         return false;
     }
 
-    // Método para convertir una venta a DTO
-    public SaleDto convertirAVentaDTO(Sale venta) {
-        SaleDto ventaDTO = new SaleDto();
+    public SaleResponseDto convertirAVentaDTO(Sale venta) {
+        SaleResponseDto ventaDTO = new SaleResponseDto();
         ventaDTO.setId(venta.getId());
         ventaDTO.setFecha(venta.getFecha());
         ventaDTO.setClienteId(venta.getCliente());
@@ -129,7 +122,7 @@ public class SaleService {
                     SaleProductDto productoDTO = new SaleProductDto();
                     productoDTO.setNombre(vp.getProducto().getNombre());
                     productoDTO.setCantidad(vp.getCantidad());
-                    productoDTO.setPrecio(listaPrecioService.obtenerPrecioVigente(vp.getProducto().getId()));
+                    productoDTO.setPrecio(vp.getListaPrecioVigente().getPrecio());
                     return productoDTO;
                 }).toList()
         );

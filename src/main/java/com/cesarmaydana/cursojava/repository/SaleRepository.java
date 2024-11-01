@@ -9,13 +9,4 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface SaleRepository extends JpaRepository<Sale, Long> {
-
-    // Buscar ventas por Cliente
-    List<Sale> findByCliente(Client cliente);
-
-    // Buscar ventas entre dos fechas
-    List<Sale> findByFechaBetween(LocalDate startDate, LocalDate endDate);
-
-    // Buscar ventas por monto mayor a un valor
-    List<Sale> findByMontoGreaterThan(BigDecimal monto);
 }

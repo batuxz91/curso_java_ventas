@@ -5,7 +5,7 @@ import com.cesarmaydana.cursojava.model.Client;
 import java.time.LocalDate;
 import java.util.List;
 
-public class SaleDto {
+public class SaleResponseDto {
     private Long id;
     private LocalDate fecha;
     private Client cliente;
